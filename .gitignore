@@ -97,3 +97,30 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# ----customs
+
+# Android Signing Keys (절대 유출 금지)
+*.keystore
+*.jks
+*.p12
+
+# Firebase / AdMob Config
+google-services.json
+
+# API & Secrets (보안 파일)
+secrets.json
+config.sml
+*.secret
+
+# OS Specific
+.DS_Store
+Thumbs.db
+
+# IDE Specific
+.vscode/
+.idea/
+
+# Assets & Backup
+/[Bb]ackup/
+*.bak
