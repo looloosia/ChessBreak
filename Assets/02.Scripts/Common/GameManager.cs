@@ -1,0 +1,68 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class GameManager : Singleton<GameManager>
+{
+    private GameLogic _gameLogic;
+    public GameLogic GameLogic =>  _gameLogic;
+    
+    private Constants.PlayerType _gamePlayerType;
+    public Constants.PlayerType GamePlayerType  => _gamePlayerType;
+    
+    private Constants.GameType _gameType;
+    public Constants.GameType GameType => _gameType;
+    
+    private BoardController _boardController;
+    public BoardController BoardController => _boardController;
+
+    // temp
+    void Awake()
+    {
+        InitGameScene();
+    }
+    
+    protected override void OnSceneLoad(Scene scene, LoadSceneMode mode)
+    {
+        Debug.Log("OnSceneLoad");
+        // 게임씬일 때
+        if (scene.name == "03.Game")
+        {
+            InitGameScene();
+        }
+    }
+
+    private void InitGameScene()
+    {
+        // TODO: 실제 gameType 가져오기
+        _gameType = Constants.GameType.LocalDualPlay;
+        _boardController = FindFirstObjectByType<BoardController>();
+        if (_boardController == null)
+            Debug.LogError("_boardController == null");
+        NewGameLogic();
+    }
+
+    private void NewGameLogic()
+    {
+        // 게임로직에 게임플레이어, 현재턴플레이어, 게임타입 전달
+        _gameLogic = new GameLogic(_gameType, _boardController);
+        Debug.Log("<color=yellow>GameLogic 생성됨</color>");
+    }
+
+    // Game scene 으로 전환
+    public void ChangeToGameScene()
+    {
+        SceneManager.LoadScene("03.Game");
+    }
+
+    // Main scene 으로 전환
+    public void ChangeToMainScene()
+    {
+        SceneManager.LoadScene("02.Main");
+    }
+
+    // SplashScreen scene 으로 전환
+    public void ChangeToSplashScene()
+    {
+        SceneManager.LoadScene("01.SplashScreen");
+    }
+}
