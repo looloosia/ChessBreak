@@ -110,7 +110,7 @@ google-services.json
 
 # API & Secrets (보안 파일)
 secrets.json
-config.sml
+config.xml
 *.secret
 
 # OS Specific
