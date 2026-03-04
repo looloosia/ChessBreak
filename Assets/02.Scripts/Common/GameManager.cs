@@ -3,6 +3,9 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>
 {
+    [SerializeField] StageData _stageData;
+    public StageData StageData => _stageData;
+    
     private GameLogic _gameLogic;
     public GameLogic GameLogic =>  _gameLogic;
     
@@ -10,10 +13,14 @@ public class GameManager : Singleton<GameManager>
     public Constants.PlayerType GamePlayerType  => _gamePlayerType;
     
     private Constants.GameType _gameType;
-    public Constants.GameType GameType => _gameType;
+    
+    
     
     private BoardController _boardController;
     public BoardController BoardController => _boardController;
+    
+    private MoveChecker _moveChecker;
+    public MoveChecker MoveChecker => _moveChecker;
 
     // temp
     void Awake()
@@ -33,12 +40,15 @@ public class GameManager : Singleton<GameManager>
 
     private void InitGameScene()
     {
-        // TODO: 실제 gameType 가져오기
+        // TODO: 실제 gameType, stageData 가져오기
         _gameType = Constants.GameType.LocalDualPlay;
+        
         _boardController = FindFirstObjectByType<BoardController>();
         if (_boardController == null)
             Debug.LogError("_boardController == null");
+        _moveChecker = new MoveChecker();
         NewGameLogic();
+        _boardController.LoadStage(_stageData);
     }
 
     private void NewGameLogic()

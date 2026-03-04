@@ -815,6 +815,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa84db44d5712f047bc9ddb8f69a3fc6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoardGenerator
+  whitePieces:
+  - {fileID: 11400000, guid: 7297e65c58577094c86cb515c946a2dc, type: 2}
+  - {fileID: 11400000, guid: 6056c26d8a34e15458abb4c97de64ed3, type: 2}
+  - {fileID: 11400000, guid: 52f9402fb43a7e64aaf807b4f965501d, type: 2}
+  - {fileID: 11400000, guid: 0076f3c802459de43a55dd0f5d06aacc, type: 2}
+  - {fileID: 11400000, guid: 77b3d5c6fd6d5ae429754abd6466c91a, type: 2}
+  - {fileID: 11400000, guid: 7d39c482f472b494eb26324a93c07d8c, type: 2}
+  blackPieces:
+  - {fileID: 11400000, guid: 68827eb551ad56b408fa97d20f753dcc, type: 2}
+  - {fileID: 11400000, guid: c9e4819701fd2be43af6fbc04e04d6b2, type: 2}
+  - {fileID: 11400000, guid: 6eb72c47b54c30147b7e822ded4b7d01, type: 2}
+  - {fileID: 11400000, guid: cc047a82b6ab5fc4bb093e7b1659c539, type: 2}
+  - {fileID: 11400000, guid: 2c51596bf8231474199bcfe88af570dd, type: 2}
+  - {fileID: 11400000, guid: a071b4abcb356724fabc4a53d51da0c7, type: 2}
   _blockMinPos: {x: 5.249, y: 0, z: -5.249}
   _blockScale: {x: 1.5, y: 0.42, z: 1.5}
 --- !u!1660057539 &9223372036854775807

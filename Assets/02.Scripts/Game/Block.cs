@@ -6,6 +6,12 @@ public class Block : MonoBehaviour
 {
     // 자식 chessPiece
     private Piece _pieceInBlock;
+
+    public Piece PieceInBlock
+    {
+        get => _pieceInBlock;
+        set => _pieceInBlock = value;
+    }
     public delegate void OnBlockClicked(Piece piece, (int row, int col) index);
     private OnBlockClicked _onBlockClicked;
     
@@ -32,7 +38,6 @@ public class Block : MonoBehaviour
         //     return;
         // }
         _onBlockClicked?.Invoke(_pieceInBlock, (_row, _col));
-        
     }
 
     void OnMouseDown()
@@ -58,8 +63,27 @@ public class Block : MonoBehaviour
             _pieceInBlock = null;
             return;
         }
+        piece.Index = (_row, _col);
         // 블록에 기물할당
-        piece.transform.SetParent(transform);
-        piece.transform.localPosition = Vector3.zero;
+        piece.transform.position = transform.position;
+        _pieceInBlock = piece;
+    }
+
+    public void MakePiece(PieceData data)
+    {
+        if (_pieceInBlock == null)
+        {
+            GameObject pieceObj;
+            pieceObj = Instantiate(data.prefab);
+            pieceObj.transform.position = transform.position;
+            pieceObj.transform.localScale = Vector3.one;
+            _pieceInBlock = pieceObj.GetComponent<Piece>();
+            _pieceInBlock.Index = (_row, _col);
+        }
+    }
+
+    public void Clear()
+    {
+        _pieceInBlock = null;
     }
 }

@@ -8,13 +8,13 @@ public abstract class BaseState
     public abstract void OnExit(GameLogic gameLogic);                       // 상태 종료 시 호출
     public abstract void HandleNextTurn(GameLogic gameLogic);               // 다음 턴 처리
 
-    public void ProcessMove(GameLogic gameLogic, (int,int) index, Constants.PlayerColor playerType)
+    public void ProcessMove(GameLogic gameLogic, (int,int) index, Piece piece)
     {
-        // 특정 위치에 마커 표시
-        if (gameLogic.PlacePiece(index, playerType))
+        // secondClickedBlock으로 firstClickedPiece 옮기기
+        if (gameLogic.PlacePiece(index, piece))
         {
             // 게임 승패 확인
-            var gameResult = gameLogic.CheckGameResult(playerType);
+            var gameResult = gameLogic.CheckGameResult(piece.Data.pieceColor);
             if (gameResult == Constants.GameResult.None)
             {
                 // 턴 전환

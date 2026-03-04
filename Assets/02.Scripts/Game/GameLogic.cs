@@ -43,8 +43,8 @@ public class GameLogic : IDisposable
     }
 
     // 보드의 상태
-    private Constants.PlayerColor[,] _board;
-    public Constants.PlayerColor[,] Board => _board;
+    private Piece[,] _board;
+    public Piece[,] Board => _board;
     
     private BoardController _boardController;
     public BoardController BoardController => _boardController;
@@ -54,7 +54,7 @@ public class GameLogic : IDisposable
     {
         _gameType = gameType;
         _boardController = boardController;
-        _board = new Constants.PlayerColor[Constants.BOARD_SIZE, Constants.BOARD_SIZE];
+        _board = new Piece[Constants.BOARD_SIZE, Constants.BOARD_SIZE];
         InitStates();
     }
 
@@ -65,13 +65,13 @@ public class GameLogic : IDisposable
         _currentState.OnEnter(this);
     }
 
-    public bool PlacePiece((int, int) index, Constants.PlayerColor playerColor)
+    public bool PlacePiece((int, int) index, Piece piece)
     {
-        Debug.Log($"item1: {index.Item1}, item2: {index.Item2}");
-        if (_board[index.Item1, index.Item2] != Constants.PlayerColor.None)
+        //piece를 해당 index에 추가.
+        if (_board[index.Item1, index.Item2] != null)
             return false;
-        // _boardController.onBlockClicked += PlacePiece(index, playerType);
-        _board[index.Item1, index.Item2] = playerColor;
+        _boardController.Blocks[index].SetPiece(piece);
+        _board[index.Item1, index.Item2] = piece;
         return true;
     }
     
