@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2397982}
   - component: {fileID: 6465112}
   - component: {fileID: 4091729973961667373}
-  m_Layer: 6
+  m_Layer: 2
   m_Name: White Rook
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -141,7 +141,7 @@ GameObject:
   - component: {fileID: 8161735706036116442}
   - component: {fileID: 295949766186492890}
   - component: {fileID: 6884748600946647808}
-  m_Layer: 5
+  m_Layer: 2
   m_Name: Canvas (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -254,7 +254,7 @@ GameObject:
   - component: {fileID: 5258669041615643485}
   - component: {fileID: 1782771038436239312}
   - component: {fileID: 4711759483227376115}
-  m_Layer: 5
+  m_Layer: 2
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameLogic : IDisposable
 {
     #region Fields & Properties
+    
     // 게임의 플레이어 state
     private BaseState _gamePlayer;
     public BaseState GamePlayer
@@ -41,20 +43,18 @@ public class GameLogic : IDisposable
     {
         get { return _gameResult; }
     }
-
-    // 보드의 상태
-    private Piece[,] _board;
-    public Piece[,] Board => _board;
     
     private BoardController _boardController;
     public BoardController BoardController => _boardController;
+
+    
+
     #endregion
     
     public GameLogic(Constants.GameType gameType, BoardController boardController)
     {
         _gameType = gameType;
         _boardController = boardController;
-        _board = new Piece[Constants.BOARD_SIZE, Constants.BOARD_SIZE];
         InitStates();
     }
 
@@ -65,14 +65,66 @@ public class GameLogic : IDisposable
         _currentState.OnEnter(this);
     }
 
+    // index로 piece 이동
     public bool PlacePiece((int, int) index, Piece piece)
     {
-        //piece를 해당 index에 추가.
-        if (_board[index.Item1, index.Item2] != null)
-            return false;
+        Debug.Log("<color=red>PlacePiece</color>");
+        _boardController.Blocks[index].Clear(false);
         _boardController.Blocks[index].SetPiece(piece);
-        _board[index.Item1, index.Item2] = piece;
+        
         return true;
+    }
+
+    public bool IsCapturable((int, int) index, Piece piece)
+    {
+        Piece goalPiece = BoardController.Blocks[index].PieceInBlock;
+        // 만약 먹을 수 있는 piece면 먹는 로직
+        if (piece.Data.pieceColor != goalPiece.Data.pieceColor)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool IsMoveable((int, int) index, Piece piece)
+    {
+        List<(int, int)> moveableBlocks =
+            GameManager.Instance.MoveChecker.MoveableBlocks(piece.Data.pieceType, piece.Index);
+        
+        // 이동 가능한 곳이면
+        if (moveableBlocks.Contains(index))
+        {
+            // 해당 블록에 piece가 있으면
+            if (BoardController.Blocks[index].PieceInBlock != null)
+            {
+                // 먹을 수 있는 piece이면
+                if (IsCapturable(index, piece))
+                {
+                    // _boardController.Blocks[index].Clear(false);
+                    // Debug.Log($"{piece}가 먹음!");
+                    return true;
+                }
+            }
+            // 해당 블록이 비어있으면
+            else
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    public bool IsCheck((int, int) index, Piece piece)
+    {
+        List<(int, int)> moveableBlocks = GameManager.Instance.MoveChecker.MoveableBlocks(piece.Data.pieceType, index);
+        foreach (var block in moveableBlocks)
+        {
+            if (BoardController.Blocks[block].PieceInBlock.)
+        }
     }
     
     void InitStates()

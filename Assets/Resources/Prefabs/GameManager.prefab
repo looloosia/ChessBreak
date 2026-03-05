@@ -44,3 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e72fb582f23de943909229022d702ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  _stageData: {fileID: 11400000, guid: 779915df87b27114e885051f8c61fb27, type: 2}
+  _moveablePrefab: {fileID: 3211664728120700395, guid: 7239b74bc2621a84fa6b6d1022570469, type: 3}
+  _moveableScale: {x: 1, y: 0.1145, z: 1}

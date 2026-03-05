@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2309778}
   - component: {fileID: 6410760}
   - component: {fileID: 5869139039543610680}
-  m_Layer: 6
+  m_Layer: 2
   m_Name: Black Pawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -141,7 +141,7 @@ GameObject:
   - component: {fileID: 1999241476110342373}
   - component: {fileID: 834821005319511557}
   - component: {fileID: 8040753969165540805}
-  m_Layer: 5
+  m_Layer: 2
   m_Name: Canvas (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -254,7 +254,7 @@ GameObject:
   - component: {fileID: 4025063823553054643}
   - component: {fileID: 5363965684683120803}
   - component: {fileID: 1040032861115360321}
-  m_Layer: 5
+  m_Layer: 2
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}

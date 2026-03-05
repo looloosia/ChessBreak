@@ -13,9 +13,14 @@ public class PlayerState : BaseState
     private string _multiplayRoomId;
     
     private Piece _firstClickedPiece;
+    private (int, int) _firstClickedIndex;
     private Piece _secondClickedPiece;
     private (int, int) _secondClickedIndex;
     private bool _isTurnable = false;
+    List<(int, int)> _moveableBlocks = new List<(int, int)>();
+    
+    public delegate void OnCheck();
+    private OnCheck _onCheck;
 
     public PlayerState(bool isFirstPlayer)
     {
@@ -39,7 +44,6 @@ public class PlayerState : BaseState
 
     public override void OnEnter(GameLogic gameLogic)
     {
-        Debug.Log("OnEnter");
         _gameLogic = gameLogic;
         // 상태 진입 시 로직 구현
         gameLogic.BoardController.onBlockClicked = OnBlockClicked;
@@ -67,26 +71,24 @@ public class PlayerState : BaseState
             Debug.LogError("PlayerState: _firstClickedPiece == null");
             return;
         }
-        List<(int, int)> moveableBlocks =
-            GameManager.Instance.MoveChecker.MoveableBlocks(_firstClickedPiece.Data.pieceType, _firstClickedPiece.Index.Item1, _firstClickedPiece.Index.Item2);
-        // temp
-        Debug.Log(_secondClickedIndex.ToString());
-        foreach (var block in  moveableBlocks)
-            Debug.Log($"<color=yellow>{block.ToString()}</color>");
         
-        if (moveableBlocks.Contains(_secondClickedIndex))
+        // 이동 가능한 곳을 클릭했을 때
+        if (_gameLogic.IsMoveable(_secondClickedIndex, _firstClickedPiece))
         {
             // firstClicked Block의 piece 제거하기
-            _gameLogic.BoardController.Blocks[_secondClickedIndex].Clear();
+            gameLogic.BoardController.Blocks[_firstClickedIndex].Clear(false);
+            gameLogic.BoardController.Blocks[_secondClickedIndex].RemovePiece();
             ProcessMove(gameLogic, index, _firstClickedPiece);
         }
         else
         {
             Debug.Log("불가능한 수입니다.");
         }
+        gameLogic.BoardController.ClearBoard(true);
         _firstClickedPiece = null;
         _secondClickedPiece = null;
         _secondClickedIndex = (-1, -1);
+        _moveableBlocks.Clear();
         // TODO: 멀티플레이 관련
         // 멀티 플레이인 경우, 상대방에게도 이동 정보 전송
         // if (_isMultiplayer)
@@ -97,32 +99,97 @@ public class PlayerState : BaseState
 
     public override void OnExit(GameLogic gameLogic)
     {
-        Debug.Log("OnExit");
         // gameLogic.blockController.onBlockClicked = null;
     }
     
-    void OnBlockClicked(Piece piece, (int, int) blockIndex)
+    void OnBlockClicked(Piece piece, Block block, (int, int) blockIndex)
     {
         string strPiece = piece == null ? "null" : piece.ToString();
         Debug.Log($"OnBlockClicked. piece in the block is {strPiece}");
+        
+        List<(int, int)> willRemove = new List<(int, int)>();
+        
+        // 이게 첫번째 클릭일 때
         if (_firstClickedPiece == null)
         {
             _firstClickedPiece = piece;
+            _firstClickedIndex = blockIndex;
             _isTurnable = false;
+
+            // 첫번째 클릭을 빈칸을 했을 때
+            if (_firstClickedPiece == null)
+            {
+                return;
+            }
         }
+        // 첫번째로 기물 클릭하고 두번째로 기물 클릭했을 때
+        else if (piece != null)
+        {
+            // 기물을 먹을 수 있으면
+            if (_gameLogic.IsCapturable(blockIndex, _firstClickedPiece))
+            {
+                _secondClickedPiece = piece;
+                _secondClickedIndex = blockIndex;
+                _isTurnable = true;
+            }
+            // 기물을 먹을 수 없으면
+            else
+            {
+                _firstClickedPiece = piece;
+                _firstClickedIndex = blockIndex;
+                willRemove.Add(blockIndex);
+                _isTurnable = false;
+                _gameLogic.BoardController.ClearBoard(true);
+            }
+        }
+        // 첫번째로 기물 클릭하고 두번째로 빈칸 클릭했을 때
         else if (_secondClickedPiece == null)
         {
-            Debug.Log("second piece is being filled");
             _secondClickedPiece = piece;
             _secondClickedIndex = blockIndex;
+            
             _isTurnable = true;
         }
         else
         {
             Debug.Log("firstClickedPiece, secondClickedPiece 모두 null이 아님");
         }
-        Debug.Log($"fistPiece: {_firstClickedPiece}, secondPiece: {_secondClickedPiece}, isTurnable: {_isTurnable}");
+        
+        if (_firstClickedPiece == null)
+        {
+            Debug.LogError("firstClickedPiece == null");
+            return;
+        }
+
+        _moveableBlocks = GameManager.Instance.MoveChecker.MoveableBlocks(_firstClickedPiece.Data.pieceType, piece.Index);
+            
+        foreach (var moveable in _moveableBlocks)
+        {
+            foreach (var remove in willRemove)
+            {
+                if (remove == moveable)
+                {
+                    _moveableBlocks.Remove(moveable);
+                    willRemove.Remove(remove);
+                }
+            }
+        }
         if (_isTurnable)
             HandleMove(_gameLogic, blockIndex);
+        else
+        {
+            VisualizeMoveables(piece, blockIndex);
+        }
+    }
+
+    void VisualizeMoveables(Piece piece, (int, int) blockIndex)
+    {
+        BoardController boardController = _gameLogic.BoardController;
+        
+        foreach (var moveableBlock in _moveableBlocks)
+        {
+            Block block = boardController.Blocks[moveableBlock];
+            block.SetMovebale();
+        }
     }
 }

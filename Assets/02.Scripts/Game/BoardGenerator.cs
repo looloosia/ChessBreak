@@ -36,9 +36,9 @@ public class BoardController : MonoBehaviour
                 blockScript.Col = localCol;
                 newBlock.transform.localScale = _blockScale;
                 newBlock.transform.localPosition = spawnPos;
-                blockScript.InitBlock((localRow,localCol), (piece, pos) =>
+                blockScript.InitBlock((localRow,localCol), (piece, block, pos) =>
                 {
-                    onBlockClicked?.Invoke(piece, (pos.Item1, pos.Item2));
+                    onBlockClicked?.Invoke(piece, block, (pos.Item1, pos.Item2));
                 });
                 _blocks[(localRow, localCol)] = blockScript;
                 ArrangePiece(blockScript, localRow, localCol);
@@ -92,18 +92,19 @@ public class BoardController : MonoBehaviour
         }
     }
 
-    void ClearBoard()
+    public void ClearBoard(bool onlyMoveables)
     {
         foreach (Block block in _blocks.Values)
         {
-            Destroy(block.PieceInBlock.gameObject);
-            block.Clear();
+            block.Clear(onlyMoveables);
+            if (!onlyMoveables)
+                Destroy(block.PieceInBlock.gameObject);
         }
     }
 
     public void LoadStage(StageData stage)
     {
-        ClearBoard();
+        ClearBoard(false);
         // TODO: piece Layout 커스텀으롤 만들게 되면 불러오기
         
         // 보드 초기화

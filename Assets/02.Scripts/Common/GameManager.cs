@@ -6,6 +6,12 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] StageData _stageData;
     public StageData StageData => _stageData;
     
+    [SerializeField]
+    private GameObject _moveablePrefab;
+    public GameObject MoveablePrefab => _moveablePrefab;
+    [SerializeField] private Vector3 _moveableScale;
+    public Vector3 MoveableScale => _moveableScale;
+    
     private GameLogic _gameLogic;
     public GameLogic GameLogic =>  _gameLogic;
     

@@ -10,6 +10,7 @@ public abstract class BaseState
 
     public void ProcessMove(GameLogic gameLogic, (int,int) index, Piece piece)
     {
+        Debug.Log("<color=red>processmove</color>");
         // secondClickedBlock으로 firstClickedPiece 옮기기
         if (gameLogic.PlacePiece(index, piece))
         {

@@ -17,7 +17,6 @@ public class UIManager : Singleton<UIManager>
 
     public void SetGameTurn(Constants.PlayerColor playerTurnType)
     {
-        Debug.Log("턴 UI 변경");
         // _gamePanelController.SetPlayerTurnPanel(playerTurnType);
     }
     public void OpenConfirmPanel(string msg /*ConfirmPanelController.OnConfirmButtonClicked onConfirmButtonClicked*/)
