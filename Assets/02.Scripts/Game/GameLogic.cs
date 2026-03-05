@@ -118,14 +118,14 @@ public class GameLogic : IDisposable
         return false;
     }
     
-    public bool IsCheck((int, int) index, Piece piece)
-    {
-        List<(int, int)> moveableBlocks = GameManager.Instance.MoveChecker.MoveableBlocks(piece.Data.pieceType, index);
-        foreach (var block in moveableBlocks)
-        {
-            if (BoardController.Blocks[block].PieceInBlock.)
-        }
-    }
+    // public bool IsCheck((int, int) index, Piece piece)
+    // {
+    //     List<(int, int)> moveableBlocks = GameManager.Instance.MoveChecker.MoveableBlocks(piece.Data.pieceType, index);
+    //     foreach (var block in moveableBlocks)
+    //     {
+    //         if (BoardController.Blocks[block].PieceInBlock.)
+    //     }
+    // }
     
     void InitStates()
     {

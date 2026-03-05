@@ -161,7 +161,7 @@ public class PlayerState : BaseState
             return;
         }
 
-        _moveableBlocks = GameManager.Instance.MoveChecker.MoveableBlocks(_firstClickedPiece.Data.pieceType, piece.Index);
+        _moveableBlocks = GameManager.Instance.MoveChecker.MoveableBlocks(_firstClickedPiece.Data.pieceType, _firstClickedIndex);
             
         foreach (var moveable in _moveableBlocks)
         {
