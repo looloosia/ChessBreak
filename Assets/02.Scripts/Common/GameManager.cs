@@ -61,7 +61,7 @@ public class GameManager : Singleton<GameManager>
 
     private void NewGameLogic()
     {
-        // 게임로직에 게임플레이어, 현재턴플레이어, 게임타입 전달
+        // 게임로직에 게임타입, 보드컨트롤러 전달
         _gameLogic = new GameLogic(_gameType, _boardController);
         Debug.Log("<color=yellow>GameLogic 생성됨</color>");
     }

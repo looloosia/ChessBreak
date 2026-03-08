@@ -40,6 +40,7 @@ public class PlayerState : BaseState
 
     public override void OnEnter(GameLogic gameLogic)
     {
+        Debug.Log("OnEnter");
         _gameLogic = gameLogic;
         // 상태 진입 시 로직 구현
         gameLogic.BoardController.onBlockClicked = OnBlockClicked;

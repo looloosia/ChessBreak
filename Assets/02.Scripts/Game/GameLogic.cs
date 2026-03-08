@@ -114,16 +114,12 @@ public class GameLogic : IDisposable
             if (pieceInBlock == null)
                 continue;
             
-            // playerColor 색의 기물일 경우에
-            if (pieceInBlock.Data.pieceColor == playerColor)
+            foreach (var moveable in GameManager.Instance.MoveChecker.MoveableBlocks(pieceInBlock.Data.pieceType, playerColor,
+                         pieceInBlock.Index))
             {
-                foreach (var moveable in GameManager.Instance.MoveChecker.MoveableBlocks(pieceInBlock.Data.pieceType, _currentState.PlayerType,
-                             pieceInBlock.Index))
-                {
-                    // 반환할 리스트에 해당 기물의 moveables 추가
-                    if (!allMoveables.ContainsKey(moveable.Key))
-                        allMoveables[moveable.Key] = moveable.Value;
-                }
+                // 반환할 리스트에 해당 기물의 moveables 추가
+                if (!allMoveables.ContainsKey(moveable.Key))
+                    allMoveables[moveable.Key] = moveable.Value;
             }
         }
         return allMoveables;
