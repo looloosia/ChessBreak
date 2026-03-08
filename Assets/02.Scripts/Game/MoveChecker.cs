@@ -56,7 +56,7 @@ public class MoveChecker
                 int newPawnCol = pieceColor == Constants.PlayerColor.White ? col + 1 : col - 1;
                 int firstRank = pieceColor == Constants.PlayerColor.White ? 1 : Constants.BOARD_SIZE - 1;
                 
-                if (newPawnCol < Constants.BOARD_SIZE || newPawnCol >= 0)
+                if (newPawnCol < Constants.BOARD_SIZE && newPawnCol >= 0)
                 {
                     _tempDic[(row, newPawnCol)] = pieceType;
                 }
@@ -69,15 +69,17 @@ public class MoveChecker
                 // 대각선 기물먹기
                 List<(int, int)> capturables = new List<(int, int)>();
                 int newPawnRow;
-                if (row + 1 < Constants.BOARD_SIZE || row + 1 >= 0)
+                newPawnCol = pieceColor == Constants.PlayerColor.White ? col + 1 : col - 1;
+                
+                if (row + 1 < Constants.BOARD_SIZE && row + 1 >= 0)
                 {
                     newPawnRow = row + 1;
-                    capturables.Add((newPawnRow, col + 1));
+                    capturables.Add((newPawnRow, newPawnCol));
                 }
-                if (row - 1 < Constants.BOARD_SIZE || row - 1 >= 0)
+                if (row - 1 < Constants.BOARD_SIZE && row - 1 >= 0)
                 {
                     newPawnRow = row - 1;
-                    capturables.Add((newPawnRow, col + 1));
+                    capturables.Add((newPawnRow, newPawnCol));
                 }
 
                 foreach (var capturable in capturables)

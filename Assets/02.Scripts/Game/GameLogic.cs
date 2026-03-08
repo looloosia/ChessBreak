@@ -108,18 +108,21 @@ public class GameLogic : IDisposable
     public Dictionary<(int, int), Piece> GetAllMoveables(Constants.PlayerColor playerColor)
     {
         Dictionary<(int, int), Piece> allMoveables = new Dictionary<(int, int), Piece>();
+        
         foreach (var blockPair in BoardController.Blocks)
         {
             Piece pieceInBlock = blockPair.Value.PieceInBlock;
             if (pieceInBlock == null)
                 continue;
-            
-            foreach (var moveable in GameManager.Instance.MoveChecker.MoveableBlocks(pieceInBlock.Data.pieceType, playerColor,
-                         pieceInBlock.Index))
+            if (pieceInBlock.Data.pieceColor == playerColor)
             {
-                // 반환할 리스트에 해당 기물의 moveables 추가
-                if (!allMoveables.ContainsKey(moveable.Key))
-                    allMoveables[moveable.Key] = moveable.Value;
+                foreach (var moveable in GameManager.Instance.MoveChecker.MoveableBlocks(pieceInBlock.Data.pieceType, playerColor,
+                             pieceInBlock.Index))
+                {
+                    // 반환할 리스트에 해당 기물의 moveables 추가
+                    if (!allMoveables.ContainsKey(moveable.Key))
+                        allMoveables[moveable.Key] = moveable.Value;
+                }
             }
         }
         return allMoveables;
