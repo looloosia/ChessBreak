@@ -110,4 +110,20 @@ public class BoardController : MonoBehaviour
         // 보드 초기화
         InitBoard();
     }
+
+    public Block FindWithTypeColor(Constants.PieceType pieceType, Constants.PlayerColor pieceColor)
+    {
+        foreach (Block block in _blocks.Values)
+        {
+            if (block.PieceInBlock == null)
+            {
+                continue;
+            }
+
+            if (block.PieceInBlock.Data.pieceType == pieceType && block.PieceInBlock.Data.pieceColor == pieceColor)
+            {
+                return block;
+            }
+        }
+    }
 }

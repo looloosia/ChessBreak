@@ -37,9 +37,11 @@ public class GameManager : Singleton<GameManager>
     protected override void OnSceneLoad(Scene scene, LoadSceneMode mode)
     {
         Debug.Log("OnSceneLoad");
+        
         // 게임씬일 때
         if (scene.name == "03.Game")
         {
+            _gameLogic?.Dispose();
             InitGameScene();
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using NUnit.Framework;
 using UnityEngine;
 
 public class GameLogic : IDisposable
@@ -26,14 +27,14 @@ public class GameLogic : IDisposable
     private MultiPlayManager _multiplayManager;
     private string _multiplayRoomId;
     
-    // 게임의 플레이어 타입
+    // 게임의 플레이어 타입(인간, AI)
     private Constants.PlayerType _gamePlayerType;
     public Constants.PlayerType GamePlayerType
     {
         get { return _gamePlayerType; }
     }
     
-    // 게임의 종류
+    // 게임의 종류(싱글, 로컬듀얼, 멀티)
     private Constants.GameType _gameType;
     public Constants.GameType GameType => _gameType;
     
@@ -46,8 +47,9 @@ public class GameLogic : IDisposable
     
     private BoardController _boardController;
     public BoardController BoardController => _boardController;
+    private event Action<List<(int, int)>> OnCheck;
 
-    
+    private event Action OnCheckmate;
 
     #endregion
     
@@ -56,7 +58,10 @@ public class GameLogic : IDisposable
         _gameType = gameType;
         _boardController = boardController;
         InitStates();
+        OnCheck += Check;
+        OnCheckmate += Checkmate;
     }
+    
 
     public void SetState(BaseState newState)
     {
@@ -65,20 +70,28 @@ public class GameLogic : IDisposable
         _currentState.OnEnter(this);
     }
 
-    // index로 piece 이동
+    // index로 piece 이동 (이동이 확정되어야만 실행됨)
     public bool PlacePiece((int, int) index, Piece piece)
     {
-        Debug.Log("<color=red>PlacePiece</color>");
+        if (piece == null)
+            Debug.LogError("piece == null");
         _boardController.Blocks[index].Clear(false);
         _boardController.Blocks[index].SetPiece(piece);
+
+        List<(int, int)> myAllMoveables = GetAllMoveables(_currentState.PlayerType);
         
+        // 해당 칸으로 옮기면 체크일 때 _onCheck Invoke
+        if (IsCheck(_currentState.PlayerType, myAllMoveables))
+        {
+            OnCheck?.Invoke(myAllMoveables);
+        }
         return true;
     }
 
+    // index에 있는 기물이 piece로 먹을 수 있는 기물인지
     public bool IsCapturable((int, int) index, Piece piece)
     {
         Piece goalPiece = BoardController.Blocks[index].PieceInBlock;
-        // 만약 먹을 수 있는 piece면 먹는 로직
         if (piece.Data.pieceColor != goalPiece.Data.pieceColor)
         {
             return true;
@@ -87,6 +100,31 @@ public class GameLogic : IDisposable
         {
             return false;
         }
+    }
+    
+    // 모든 기물의 moveables를 반환함
+    public List<(int, int)> GetAllMoveables(Constants.PlayerColor playerColor)
+    {
+        List<(int, int)> allMoveables = new List<(int, int)>();
+        foreach (var blockPair in BoardController.Blocks)
+        {
+            Piece pieceInBlock = blockPair.Value.PieceInBlock;
+            if (pieceInBlock == null)
+                continue;
+            
+            // playerColor 색의 기물일 경우에
+            if (pieceInBlock.Data.pieceColor == playerColor)
+            {
+                foreach (var moveable in GameManager.Instance.MoveChecker.MoveableBlocks(pieceInBlock.Data.pieceType,
+                             pieceInBlock.Index))
+                {
+                    // 반환할 리스트에 해당 기물의 moveables 추가
+                    if (!allMoveables.Contains(moveable))
+                        allMoveables.Add(moveable);
+                }
+            }
+        }
+        return allMoveables;
     }
 
     public bool IsMoveable((int, int) index, Piece piece)
@@ -118,14 +156,58 @@ public class GameLogic : IDisposable
         return false;
     }
     
-    // public bool IsCheck((int, int) index, Piece piece)
-    // {
-    //     List<(int, int)> moveableBlocks = GameManager.Instance.MoveChecker.MoveableBlocks(piece.Data.pieceType, index);
-    //     foreach (var block in moveableBlocks)
-    //     {
-    //         if (BoardController.Blocks[block].PieceInBlock.)
-    //     }
-    // }
+    // attackColor가 체크를 하고 있을 경우 attackColor의 모든 기물이동가능성 반환
+    private bool IsCheck(bool isAttackersTurn, Constants.PlayerColor attackerColor, List<(int, int)> allMoveables)
+    {
+        List<(int, int)> attackerAllMoves = new List<(int, int)>();
+        if (!isAttackersTurn)
+        {
+            attackerAllMoves = GetAllMoveables(attackerColor);
+        }
+        else
+        {
+            // attacker가 이동할 수 있는 곳이 아무 곳도 없으면 false 반환
+            if (allMoveables == null)
+                return false;
+            attackerAllMoves = allMoveables;
+        }
+        // attacker의 allMoveables 중 체크가 있는지 확인 후 있으면 true 반환
+        foreach (var blockIndex in attackerAllMoves)
+        {
+            Piece pieceInBlock = BoardController.Blocks[blockIndex].PieceInBlock;
+            if (!isAttackersTurn)
+            {
+                if (allMoveables.Contains(blockIndex))
+                {
+                    int index = allMoveables.IndexOf(blockIndex);
+                    allMoveables
+                    pieceInBlock = BoardController.Blocks[].PieceInBlock;
+                }
+            }
+            // moveable한 칸에 기물이 있을 경우
+            if (pieceInBlock != null)
+            {
+                PieceData data = pieceInBlock.Data;
+                // 해당 기물이 반대 색깔 킹이면
+                if (data.pieceType == Constants.PieceType.King && data.pieceColor != attackerColor)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    // 체크된 경우에만 실행됨. color가 메이트 받았는지 판정.
+    private bool IsMate(Constants.PlayerColor color)
+    {
+        List<(int, int)> myAllMoveables = GetAllMoveables(color);
+
+        if (!IsCheck(color, myAllMoveables))
+            return true;
+        return false;
+    }
     
     void InitStates()
     {
@@ -239,9 +321,46 @@ public class GameLogic : IDisposable
             GameManager.Instance.ChangeToMainScene();
         }*/);
     }
+    
+    public void VisualizeMoveables(Piece piece, (int, int) blockIndex, List<(int, int)> moveableBlocks)
+    {
+        BoardController boardController = BoardController;
+        
+        foreach (var moveableBlock in moveableBlocks)
+        {
+            Block block = boardController.Blocks[moveableBlock];
+            block.SetMovebale();
+        }
+    }
+
+    void Check(List<(int, int)> checkerAllMoveables)
+    {
+        Debug.Log("<color=red>Check</color>");
+        if (IsMate(OppositePlayerColor(_currentState.PlayerType)))
+        {
+            OnCheckmate?.Invoke();
+        }
+    }
+
+    void Checkmate()
+    {
+        Debug.Log("<color=red>Checkmate</color>");
+        //EndGame() 하기
+    }
+
+    public Constants.PlayerColor OppositePlayerColor(Constants.PlayerColor playerColor)
+    {
+        if (playerColor == Constants.PlayerColor.None)
+        {
+            return  Constants.PlayerColor.None;
+        }
+        return playerColor ==  Constants.PlayerColor.White ? Constants.PlayerColor.Black : Constants.PlayerColor.White;
+    }
 
     public void Dispose()
     {
-        
+        OnCheck -= Check;
+        OnCheckmate -= Checkmate;
     }
+    
 }

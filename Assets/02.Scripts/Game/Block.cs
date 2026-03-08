@@ -43,7 +43,6 @@ public class Block : MonoBehaviour
         // {
         //     return;
         // }
-        Debug.Log($"<color=yellow>_pieceInBlock is {_pieceInBlock}</color>");
         _onBlockClicked?.Invoke(_pieceInBlock, this, (_row, _col));
     }
 
@@ -67,10 +66,8 @@ public class Block : MonoBehaviour
 
     public void SetPiece(Piece piece)
     {
-        Debug.Log("<color=yellow>SetPiece()</color>");
         if (piece == null)
         {
-            Debug.Log("Piece in block is null이어서 블록 기물할당 못함");
             _pieceInBlock = null;
             return;
         }
@@ -130,7 +127,6 @@ public class Block : MonoBehaviour
         {
             return;
         }
-        Debug.Log("Block: Clear()에서 onlyMoveables가 flase여서 _pieceInBlock도 제거함");
         _pieceInBlock = null;
         if (_tempObj != null)
         {

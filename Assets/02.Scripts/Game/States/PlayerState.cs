@@ -5,8 +5,6 @@ using UnityEngine;
 
 public class PlayerState : BaseState
 {
-    private Constants.PlayerColor _playerType;
-
     // 멀티 플레이 관련 변수
     private bool _isMultiplayer;
     private MultiPlayManager _multiplayManager;
@@ -18,9 +16,6 @@ public class PlayerState : BaseState
     private (int, int) _secondClickedIndex;
     private bool _isTurnable = false;
     List<(int, int)> _moveableBlocks = new List<(int, int)>();
-    
-    public delegate void OnCheck();
-    private OnCheck _onCheck;
 
     public PlayerState(bool isFirstPlayer)
     {
@@ -105,7 +100,6 @@ public class PlayerState : BaseState
     void OnBlockClicked(Piece piece, Block block, (int, int) blockIndex)
     {
         string strPiece = piece == null ? "null" : piece.ToString();
-        Debug.Log($"OnBlockClicked. piece in the block is {strPiece}");
         
         List<(int, int)> willRemove = new List<(int, int)>();
         
@@ -178,18 +172,7 @@ public class PlayerState : BaseState
             HandleMove(_gameLogic, blockIndex);
         else
         {
-            VisualizeMoveables(piece, blockIndex);
-        }
-    }
-
-    void VisualizeMoveables(Piece piece, (int, int) blockIndex)
-    {
-        BoardController boardController = _gameLogic.BoardController;
-        
-        foreach (var moveableBlock in _moveableBlocks)
-        {
-            Block block = boardController.Blocks[moveableBlock];
-            block.SetMovebale();
+            _gameLogic.VisualizeMoveables(piece, blockIndex, _moveableBlocks);
         }
     }
 }
