@@ -82,6 +82,7 @@ public class GameLogic : IDisposable
         Dictionary<(int, int), Piece> myAllMoveables = GetAllMoveables(_currentState.PlayerType);
         
         // 해당 칸으로 옮기면 체크일 때 _onCheck Invoke
+        Debug.Log("_currentState type : " + _currentState.PlayerType);
         if (IsCheck(_currentState.PlayerType))
         {
             OnCheck?.Invoke(myAllMoveables);
@@ -162,10 +163,6 @@ public class GameLogic : IDisposable
     {
         Debug.Log("<color=yellow>IsCheck() 실행됨</color>");
         Dictionary<(int, int), Piece> attackerAllMoves = new Dictionary<(int, int), Piece>();
-        if (recieverAllMoves == null)
-        {
-            
-        }
         attackerAllMoves = GetAllMoveables(attackerColor);
         
         // attacker가 이동할 수 있는 곳이 아무 곳도 없으면 false 반환(갇힌 경우)

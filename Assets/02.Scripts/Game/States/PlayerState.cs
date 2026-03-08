@@ -107,17 +107,20 @@ public class PlayerState : BaseState
         // 이게 첫번째 클릭일 때
         if (_firstClickedPiece == null)
         {
+            _isTurnable = false;
+            
+            // 첫번째 클릭을 빈칸을 했을 때 그냥 반환
+            if (piece == null)
+                return;
+            
+            // 현재 턴 색상이 아닌 기물 클릭했을 때 그냥 반환
+            if (piece.Data.pieceColor != _playerType)
+                return;
+            
             _firstClickedPiece = piece;
             _firstClickedIndex = blockIndex;
-            _isTurnable = false;
-
-            // 첫번째 클릭을 빈칸을 했을 때
-            if (_firstClickedPiece == null)
-            {
-                return;
-            }
         }
-        // 첫번째로 기물 클릭하고 두번째로 기물 클릭했을 때
+        // 이게 두번째 클릭일 때
         else if (piece != null)
         {
             // 기물을 먹을 수 있으면

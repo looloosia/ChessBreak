@@ -52,12 +52,47 @@ public class MoveChecker
                 List<(int, int)> rookStraights = CalStraights(row, col, pieceType);
                 break;
             case Constants.PieceType.Pawn:
-                if (col + 1 >= Constants.BOARD_SIZE || col + 1 < 0)
+                // 전진
+                int newPawnCol = pieceColor == Constants.PlayerColor.White ? col + 1 : col - 1;
+                int firstRank = pieceColor == Constants.PlayerColor.White ? 1 : Constants.BOARD_SIZE - 1;
+                
+                if (newPawnCol < Constants.BOARD_SIZE || newPawnCol >= 0)
                 {
-                    break;
+                    _tempDic[(row, newPawnCol)] = pieceType;
                 }
-                _tempDic[(row, col + 1)] = pieceType; 
-                // 잡아먹거나 앙파상일경우, 1에 있으면 2칸이동가능도 추가
+                if (col == firstRank)
+                {
+                    newPawnCol = pieceColor == Constants.PlayerColor.White ? col + 2 : col - 2;
+                    _tempDic[(row, newPawnCol)] = pieceType;
+                }
+                
+                // 대각선 기물먹기
+                List<(int, int)> capturables = new List<(int, int)>();
+                int newPawnRow;
+                if (row + 1 < Constants.BOARD_SIZE || row + 1 >= 0)
+                {
+                    newPawnRow = row + 1;
+                    capturables.Add((newPawnRow, col + 1));
+                }
+                if (row - 1 < Constants.BOARD_SIZE || row - 1 >= 0)
+                {
+                    newPawnRow = row - 1;
+                    capturables.Add((newPawnRow, col + 1));
+                }
+
+                foreach (var capturable in capturables)
+                {
+                    Debug.Log("add capturable: " + capturable);
+                    Piece capturablePiece = _blocks[capturable].PieceInBlock;
+                    if (capturablePiece != null)
+                    {
+                        if (capturablePiece.Data.pieceColor != pieceColor)
+                        {
+                            _tempDic[capturable] = pieceType;
+                        }
+                    }
+                }
+                // TODO:앙파상 추가
                 break;
             case Constants.PieceType.King:
                 for (int i = -1; i <= 1; i++)
