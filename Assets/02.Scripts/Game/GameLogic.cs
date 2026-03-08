@@ -47,7 +47,7 @@ public class GameLogic : IDisposable
     
     private BoardController _boardController;
     public BoardController BoardController => _boardController;
-    private event Action<List<(int, int)>> OnCheck;
+    private event Action<Dictionary<(int, int), Block>> OnCheck;
 
     private event Action OnCheckmate;
 
@@ -78,10 +78,10 @@ public class GameLogic : IDisposable
         _boardController.Blocks[index].Clear(false);
         _boardController.Blocks[index].SetPiece(piece);
 
-        List<(int, int)> myAllMoveables = GetAllMoveables(_currentState.PlayerType);
+        Dictionary<(int, int), Block> myAllMoveables = GetAllMoveables(_currentState.PlayerType);
         
         // 해당 칸으로 옮기면 체크일 때 _onCheck Invoke
-        if (IsCheck(_currentState.PlayerType, myAllMoveables))
+        if (IsCheck(true, _currentState.PlayerType, myAllMoveables))
         {
             OnCheck?.Invoke(myAllMoveables);
         }
@@ -102,10 +102,10 @@ public class GameLogic : IDisposable
         }
     }
     
-    // 모든 기물의 moveables를 반환함
-    public List<(int, int)> GetAllMoveables(Constants.PlayerColor playerColor)
+    // 모든 기물의 moveables를 반환함 => 추후 같은 블록에 겹치는 것 처리 문제 해결하기
+    public Dictionary<(int, int), Block> GetAllMoveables(Constants.PlayerColor playerColor)
     {
-        List<(int, int)> allMoveables = new List<(int, int)>();
+        Dictionary<(int, int), Block> allMoveables = new Dictionary<(int, int), Block>();
         foreach (var blockPair in BoardController.Blocks)
         {
             Piece pieceInBlock = blockPair.Value.PieceInBlock;
@@ -115,12 +115,12 @@ public class GameLogic : IDisposable
             // playerColor 색의 기물일 경우에
             if (pieceInBlock.Data.pieceColor == playerColor)
             {
-                foreach (var moveable in GameManager.Instance.MoveChecker.MoveableBlocks(pieceInBlock.Data.pieceType,
+                foreach (var moveable in GameManager.Instance.MoveChecker.MoveableBlocks(pieceInBlock.Data.pieceType, _currentState.PlayerType,
                              pieceInBlock.Index))
                 {
                     // 반환할 리스트에 해당 기물의 moveables 추가
-                    if (!allMoveables.Contains(moveable))
-                        allMoveables.Add(moveable);
+                    if (!allMoveables.ContainsKey(moveable.Key))
+                        allMoveables[moveable.Key] = moveable.Value;
                 }
             }
         }
@@ -129,11 +129,11 @@ public class GameLogic : IDisposable
 
     public bool IsMoveable((int, int) index, Piece piece)
     {
-        List<(int, int)> moveableBlocks =
-            GameManager.Instance.MoveChecker.MoveableBlocks(piece.Data.pieceType, piece.Index);
+        Dictionary<(int, int), Block> moveableBlocks =
+            GameManager.Instance.MoveChecker.MoveableBlocks(piece.Data.pieceType, piece.Data.pieceColor, piece.Index);
         
         // 이동 가능한 곳이면
-        if (moveableBlocks.Contains(index))
+        if (moveableBlocks.ContainsKey(index))
         {
             // 해당 블록에 piece가 있으면
             if (BoardController.Blocks[index].PieceInBlock != null)
@@ -157,9 +157,9 @@ public class GameLogic : IDisposable
     }
     
     // attackColor가 체크를 하고 있을 경우 attackColor의 모든 기물이동가능성 반환
-    private bool IsCheck(bool isAttackersTurn, Constants.PlayerColor attackerColor, List<(int, int)> allMoveables)
+    private bool IsCheck(bool isAttackersTurn, Constants.PlayerColor attackerColor, Dictionary<(int, int), Block> allMoveables)
     {
-        List<(int, int)> attackerAllMoves = new List<(int, int)>();
+        Dictionary<(int, int), Block> attackerAllMoves = new Dictionary<(int, int), Block>();
         if (!isAttackersTurn)
         {
             attackerAllMoves = GetAllMoveables(attackerColor);
@@ -172,23 +172,27 @@ public class GameLogic : IDisposable
             attackerAllMoves = allMoveables;
         }
         // attacker의 allMoveables 중 체크가 있는지 확인 후 있으면 true 반환
-        foreach (var blockIndex in attackerAllMoves)
+        foreach (var movePair in attackerAllMoves)
         {
-            Piece pieceInBlock = BoardController.Blocks[blockIndex].PieceInBlock;
+            Piece pieceInBlock = BoardController.Blocks[movePair.Key].PieceInBlock;
+            // 체크 당하는 입장일 때
             if (!isAttackersTurn)
             {
-                if (allMoveables.Contains(blockIndex))
+                // pieceInBLock을 내가 한 수 둔 뒤로 설정함
+                pieceInBlock = allMoveables[movePair.Key].PieceInBlock;
+                
+                // 내가 움직일 수 있는 기물의 위치 중 체크를 막을 수 있는 위치가 있으면
+                if (allMoveables.ContainsKey(movePair.Key))
                 {
-                    int index = allMoveables.IndexOf(blockIndex);
-                    allMoveables
-                    pieceInBlock = BoardController.Blocks[].PieceInBlock;
+                    return false;
                 }
             }
+            
             // moveable한 칸에 기물이 있을 경우
             if (pieceInBlock != null)
             {
                 PieceData data = pieceInBlock.Data;
-                // 해당 기물이 반대 색깔 킹이면
+                // 해당 기물이 attacker 색의 반대 색깔 킹이면
                 if (data.pieceType == Constants.PieceType.King && data.pieceColor != attackerColor)
                 {
                     return true;
@@ -202,9 +206,9 @@ public class GameLogic : IDisposable
     // 체크된 경우에만 실행됨. color가 메이트 받았는지 판정.
     private bool IsMate(Constants.PlayerColor color)
     {
-        List<(int, int)> myAllMoveables = GetAllMoveables(color);
+        Dictionary<(int, int), Block> myAllMoveables = GetAllMoveables(color);
 
-        if (!IsCheck(color, myAllMoveables))
+        if (!IsCheck(false, OppositePlayerColor(color), myAllMoveables))
             return true;
         return false;
     }
@@ -333,7 +337,7 @@ public class GameLogic : IDisposable
         }
     }
 
-    void Check(List<(int, int)> checkerAllMoveables)
+    void Check(Dictionary<(int, int), Block> checkersAllMoveables)
     {
         Debug.Log("<color=red>Check</color>");
         if (IsMate(OppositePlayerColor(_currentState.PlayerType)))

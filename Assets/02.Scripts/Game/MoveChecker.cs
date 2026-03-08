@@ -219,6 +219,8 @@ public class MoveChecker
         foreach (var pair in tempDic)
         {
             block = _boardController.FindWithTypeColor(pair.Value, _pieceColor);
+            if (block == null)
+                Debug.LogError($"MoveChecker: block is null(can't find block with {pair.Value} pieceType and {_pieceColor} color on board)");
             finalDic[pair.Key] = block;
         }
 

@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -15,7 +16,7 @@ public class PlayerState : BaseState
     private Piece _secondClickedPiece;
     private (int, int) _secondClickedIndex;
     private bool _isTurnable = false;
-    List<(int, int)> _moveableBlocks = new List<(int, int)>();
+    Dictionary<(int, int), Block> _moveableBlocks = new Dictionary<(int, int), Block>();
 
     public PlayerState(bool isFirstPlayer)
     {
@@ -155,9 +156,9 @@ public class PlayerState : BaseState
             return;
         }
 
-        _moveableBlocks = GameManager.Instance.MoveChecker.MoveableBlocks(_firstClickedPiece.Data.pieceType, _firstClickedIndex);
+        _moveableBlocks = GameManager.Instance.MoveChecker.MoveableBlocks(_firstClickedPiece.Data.pieceType, _playerType, _firstClickedIndex);
             
-        foreach (var moveable in _moveableBlocks)
+        foreach (var moveable in _moveableBlocks.Keys)
         {
             foreach (var remove in willRemove)
             {
@@ -172,7 +173,7 @@ public class PlayerState : BaseState
             HandleMove(_gameLogic, blockIndex);
         else
         {
-            _gameLogic.VisualizeMoveables(piece, blockIndex, _moveableBlocks);
+            _gameLogic.VisualizeMoveables(piece, blockIndex, _moveableBlocks.Keys.ToList());
         }
     }
 }
