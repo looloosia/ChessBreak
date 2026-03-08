@@ -111,7 +111,7 @@ public class BoardController : MonoBehaviour
         InitBoard();
     }
 
-    public Block FindWithTypeColor(Constants.PieceType pieceType, Constants.PlayerColor pieceColor)
+    public Block FindBlockWithTypeColor(Constants.PieceType pieceType, Constants.PlayerColor pieceColor)
     {
         foreach (Block block in _blocks.Values)
         {

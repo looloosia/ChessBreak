@@ -16,7 +16,7 @@ public class PlayerState : BaseState
     private Piece _secondClickedPiece;
     private (int, int) _secondClickedIndex;
     private bool _isTurnable = false;
-    Dictionary<(int, int), Block> _moveableBlocks = new Dictionary<(int, int), Block>();
+    Dictionary<(int, int), Piece> _moveableBlocks = new Dictionary<(int, int), Piece>();
 
     public PlayerState(bool isFirstPlayer)
     {

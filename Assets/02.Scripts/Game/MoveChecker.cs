@@ -11,13 +11,14 @@ public class MoveChecker
     BoardController _boardController;
     private Constants.PlayerColor _pieceColor;
     Dictionary<(int, int), Constants.PieceType> _tempDic = new Dictionary<(int, int), Constants.PieceType>();
-    public Dictionary<(int, int), Block> MoveableBlocks(Constants.PieceType pieceType, Constants.PlayerColor pieceColor, (int, int) index)
+    public Dictionary<(int, int), Piece> MoveableBlocks(Constants.PieceType pieceType, Constants.PlayerColor pieceColor, (int, int) index)
     {
+        _tempDic.Clear();
         _gameLogic = GameManager.Instance.GameLogic;
         _boardController = _gameLogic.BoardController;
         _blocks = _boardController.Blocks;
         _pieceColor = pieceColor;
-        Dictionary<(int, int), Block> moveableBlocks = new Dictionary<(int, int), Block>();
+        Dictionary<(int, int), Piece> moveableBlocks = new Dictionary<(int, int), Piece>();
         
         int row = index.Item1;
         int  col = index.Item2;
@@ -90,7 +91,7 @@ public class MoveChecker
             checkCol += upper;
             if (checkCol < Constants.BOARD_SIZE)
             {
-                _tempDic[(row, col)] = pieceType;
+                _tempDic[(i, checkCol)] = pieceType;
                 diagonals.Add((i, checkCol));
                 if (_blocks[(i, checkCol)].PieceInBlock != null)
                 {
@@ -108,7 +109,7 @@ public class MoveChecker
             checkCol += under;
             if (checkCol >= 0)
             {
-                _tempDic[(row, col)] = pieceType;
+                _tempDic[(i, checkCol)] = pieceType;
                 diagonals.Add((i, checkCol));
                 if (_blocks[(i, checkCol)].PieceInBlock != null)
                 {
@@ -128,7 +129,7 @@ public class MoveChecker
             checkCol += upper;
             if (checkCol < Constants.BOARD_SIZE)
             {
-                _tempDic[(row, col)] = pieceType;
+                _tempDic[(i, checkCol)] = pieceType;
                 diagonals.Add((i, checkCol));
                 if (_blocks[(i, checkCol)].PieceInBlock != null)
                 {
@@ -147,7 +148,7 @@ public class MoveChecker
             checkCol += under;
             if (checkCol >= 0)
             {
-                _tempDic[(row, col)] = pieceType;
+                _tempDic[(i, checkCol)] = pieceType;
                 diagonals.Add((i, checkCol));
                 if (_blocks[(i, checkCol)].PieceInBlock != null)
                 {
@@ -167,7 +168,7 @@ public class MoveChecker
         List<(int, int)> straights = new List<(int, int)>();
         for (int i = row - 1; i >= 0; i--)
         {
-            _tempDic[(row, col)] = pieceType;
+            _tempDic[(i, col)] = pieceType;
             straights.Add((i, col));
             if (_blocks[(i, col)].PieceInBlock != null)
             {
@@ -177,7 +178,7 @@ public class MoveChecker
 
         for (int i = row + 1; i < Constants.BOARD_SIZE; i++)
         {
-            _tempDic[(row, col)] = pieceType;
+            _tempDic[(i, col)] = pieceType;
             straights.Add((i, col));
             if (_blocks[(i, col)].PieceInBlock != null)
             {
@@ -187,7 +188,7 @@ public class MoveChecker
 
         for (int j = col - 1; j >= 0; j--)
         {
-            _tempDic[(row, col)] = pieceType;
+            _tempDic[(row, j)] = pieceType;
             straights.Add((row, j));
             if (_blocks[(row, j)].PieceInBlock != null)
             {
@@ -197,7 +198,7 @@ public class MoveChecker
 
         for (int j = col + 1; j < Constants.BOARD_SIZE; j++)
         {
-            _tempDic[(row, col)] = pieceType;
+            _tempDic[(row, j)] = pieceType;
             straights.Add((row, j));
             if (_blocks[(row, j)].PieceInBlock != null)
             {
@@ -207,10 +208,10 @@ public class MoveChecker
         return straights;
     }
 
-    public Dictionary<(int, int), Block> FinalDic(Dictionary<(int, int), Constants.PieceType> tempDic)
+    public Dictionary<(int, int), Piece> FinalDic(Dictionary<(int, int), Constants.PieceType> tempDic)
     {
         Block block;
-        Dictionary<(int, int), Block> finalDic = new Dictionary<(int, int), Block>();
+        Dictionary<(int, int), Piece> finalDic = new Dictionary<(int, int), Piece>();
         if (_pieceColor == Constants.PlayerColor.None || _pieceColor == null)
         {
             Debug.LogError("MoveChecker: _pieceColor is null or None");
@@ -218,10 +219,10 @@ public class MoveChecker
         }
         foreach (var pair in tempDic)
         {
-            block = _boardController.FindWithTypeColor(pair.Value, _pieceColor);
+            block = _boardController.FindBlockWithTypeColor(pair.Value, _pieceColor);
             if (block == null)
                 Debug.LogError($"MoveChecker: block is null(can't find block with {pair.Value} pieceType and {_pieceColor} color on board)");
-            finalDic[pair.Key] = block;
+            finalDic[pair.Key] = block.PieceInBlock;
         }
 
         return finalDic;
