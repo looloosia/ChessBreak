@@ -82,7 +82,7 @@ public class GameLogic : IDisposable
         Dictionary<(int, int), Piece> myAllMoveables = GetAllMoveables(_currentState.PlayerType);
         
         // 해당 칸으로 옮기면 체크일 때 _onCheck Invoke
-        if (IsCheck(_currentState.PlayerType, myAllMoveables))
+        if (IsCheck(_currentState.PlayerType))
         {
             OnCheck?.Invoke(myAllMoveables);
         }
@@ -160,6 +160,7 @@ public class GameLogic : IDisposable
     // attackColor가 체크를 하고 있을 경우 attackColor의 모든 기물이동가능성 반환
     private bool IsCheck(Constants.PlayerColor attackerColor, Dictionary<(int,int), Piece> recieverAllMoves = null)
     {
+        Debug.Log("<color=yellow>IsCheck() 실행됨</color>");
         Dictionary<(int, int), Piece> attackerAllMoves = new Dictionary<(int, int), Piece>();
         if (recieverAllMoves == null)
         {
@@ -167,7 +168,7 @@ public class GameLogic : IDisposable
         }
         attackerAllMoves = GetAllMoveables(attackerColor);
         
-        // attacker가 이동할 수 있는 곳이 아무 곳도 없으면 false 반환
+        // attacker가 이동할 수 있는 곳이 아무 곳도 없으면 false 반환(갇힌 경우)
         if (attackerAllMoves == null)
             return false;
         
@@ -179,7 +180,11 @@ public class GameLogic : IDisposable
             // movePair로 갈 수 있는 reciever의 기물이 있을 경우
             if (recieverAllMoves != null)
             {
-                Piece moveablePiece = recieverAllMoves[movePair.Key];
+                Piece moveablePiece = null;
+                if (recieverAllMoves.ContainsKey(movePair.Key))
+                {
+                    moveablePiece = recieverAllMoves[movePair.Key];
+                }
                 if (moveablePiece != null)
                 {
                     pieceInBlock = moveablePiece;

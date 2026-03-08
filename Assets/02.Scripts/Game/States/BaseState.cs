@@ -22,7 +22,7 @@ public abstract class BaseState
             {
                 // 턴 전환
                 HandleNextTurn(gameLogic);
-                Debug.Log("턴 전환");
+                Debug.Log("<color=blue>턴 전환</color>");
             }
             else
             {
