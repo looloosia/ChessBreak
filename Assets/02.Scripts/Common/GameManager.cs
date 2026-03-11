@@ -15,6 +15,9 @@ public class GameManager : Singleton<GameManager>
     private GameLogic _gameLogic;
     public GameLogic GameLogic =>  _gameLogic;
     
+    private RuleChecker _ruleChecker;
+    public RuleChecker RuleChecker => _ruleChecker;
+    
     private Constants.PlayerType _gamePlayerType;
     public Constants.PlayerType GamePlayerType  => _gamePlayerType;
     
@@ -55,6 +58,7 @@ public class GameManager : Singleton<GameManager>
         if (_boardController == null)
             Debug.LogError("_boardController == null");
         _moveChecker = new MoveChecker();
+        _ruleChecker = new RuleChecker(_boardController);
         NewGameLogic();
         _boardController.LoadStage(_stageData);
     }
@@ -62,7 +66,7 @@ public class GameManager : Singleton<GameManager>
     private void NewGameLogic()
     {
         // 게임로직에 게임타입, 보드컨트롤러 전달
-        _gameLogic = new GameLogic(_gameType, _boardController);
+        _gameLogic = new GameLogic(_gameType, _boardController, _ruleChecker);
         Debug.Log("<color=yellow>GameLogic 생성됨</color>");
     }
 

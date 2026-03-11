@@ -36,6 +36,25 @@ public class Block : MonoBehaviour
         set => _col = value;
     }
 
+    public Block Clone(GameObject baseObj)
+    {
+        Block newBlock = baseObj.AddComponent<Block>();
+
+        newBlock.Row = _row;
+        newBlock.Col = _col;
+        
+        if (PieceInBlock != null)
+        {
+            newBlock.PieceInBlock = PieceInBlock;
+        }
+        else
+        {
+            newBlock.PieceInBlock = null;
+        }
+
+        return newBlock;
+    }
+
     // 클릭되면 chesspiece, 좌표 반환
     void OnMouseUpAsButton()
     {

@@ -48,16 +48,19 @@ public class GameLogic : IDisposable
     
     private BoardController _boardController;
     public BoardController BoardController => _boardController;
+    
+    private RuleChecker _ruleChecker;
     private event Action<Dictionary<(int, int), Piece>> OnCheck;
 
     private event Action OnCheckmate;
 
     #endregion
     
-    public GameLogic(Constants.GameType gameType, BoardController boardController)
+    public GameLogic(Constants.GameType gameType, BoardController boardController, RuleChecker ruleChecker)
     {
         _gameType = gameType;
         _boardController = boardController;
+        _ruleChecker = ruleChecker;
         InitStates();
         OnCheck += Check;
         OnCheckmate += Checkmate;
@@ -79,138 +82,15 @@ public class GameLogic : IDisposable
         _boardController.Blocks[index].Clear(false);
         _boardController.Blocks[index].SetPiece(piece);
 
-        Dictionary<(int, int), Piece> myAllMoveables = GetAllMoveables(_currentState.PlayerType);
+        Dictionary<(int, int), Piece> myAllMoveables = _ruleChecker.GetAllMoveables(_currentState.PlayerType);
         
         // 해당 칸으로 옮기면 체크일 때 _onCheck Invoke
         Debug.Log("_currentState type : " + _currentState.PlayerType);
-        if (IsCheck(_currentState.PlayerType))
+        if (_ruleChecker.IsCheck(_currentState.PlayerType))
         {
             OnCheck?.Invoke(myAllMoveables);
         }
         return true;
-    }
-
-    // index에 있는 기물이 piece로 먹을 수 있는 기물인지
-    public bool IsCapturable((int, int) index, Piece piece)
-    {
-        Piece goalPiece = BoardController.Blocks[index].PieceInBlock;
-        if (piece.Data.pieceColor != goalPiece.Data.pieceColor)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    
-    // 모든 기물의 moveables를 반환함 => 추후 같은 블록에 겹치는 것 처리 문제 해결하기
-    public Dictionary<(int, int), Piece> GetAllMoveables(Constants.PlayerColor playerColor)
-    {
-        Dictionary<(int, int), Piece> allMoveables = new Dictionary<(int, int), Piece>();
-        
-        foreach (var blockPair in BoardController.Blocks)
-        {
-            Piece pieceInBlock = blockPair.Value.PieceInBlock;
-            if (pieceInBlock == null)
-                continue;
-            if (pieceInBlock.Data.pieceColor == playerColor)
-            {
-                foreach (var moveable in GameManager.Instance.MoveChecker.MoveableBlocks(pieceInBlock.Data.pieceType, playerColor,
-                             pieceInBlock.Index))
-                {
-                    // 반환할 리스트에 해당 기물의 moveables 추가
-                    if (!allMoveables.ContainsKey(moveable.Key))
-                        allMoveables[moveable.Key] = moveable.Value;
-                }
-            }
-        }
-        return allMoveables;
-    }
-
-    public bool IsMoveable((int, int) index, Piece piece)
-    {
-        Dictionary<(int, int), Piece> moveableBlocks =
-            GameManager.Instance.MoveChecker.MoveableBlocks(piece.Data.pieceType, piece.Data.pieceColor, piece.Index);
-        
-        // 이동 가능한 곳이면
-        if (moveableBlocks.ContainsKey(index))
-        {
-            // 해당 블록에 piece가 있으면
-            if (BoardController.Blocks[index].PieceInBlock != null)
-            {
-                // 먹을 수 있는 piece이면
-                if (IsCapturable(index, piece))
-                {
-                    // _boardController.Blocks[index].Clear(false);
-                    // Debug.Log($"{piece}가 먹음!");
-                    return true;
-                }
-            }
-            // 해당 블록이 비어있으면
-            else
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-    
-    // attackColor가 체크를 하고 있을 경우 attackColor의 모든 기물이동가능성 반환
-    private bool IsCheck(Constants.PlayerColor attackerColor, Dictionary<(int,int), Piece> recieverAllMoves = null)
-    {
-        Debug.Log("<color=yellow>IsCheck() 실행됨</color>");
-        Dictionary<(int, int), Piece> attackerAllMoves = new Dictionary<(int, int), Piece>();
-        attackerAllMoves = GetAllMoveables(attackerColor);
-        
-        // attacker가 이동할 수 있는 곳이 아무 곳도 없으면 false 반환(갇힌 경우)
-        if (attackerAllMoves == null)
-            return false;
-        
-        // attacker의 allMoveables 중 체크가 있는지 확인 후 있으면 true 반환
-        foreach (var movePair in attackerAllMoves)
-        {
-            Piece pieceInBlock = BoardController.Blocks[movePair.Key].PieceInBlock;
-            
-            // movePair로 갈 수 있는 reciever의 기물이 있을 경우
-            if (recieverAllMoves != null)
-            {
-                Piece moveablePiece = null;
-                if (recieverAllMoves.ContainsKey(movePair.Key))
-                {
-                    moveablePiece = recieverAllMoves[movePair.Key];
-                }
-                if (moveablePiece != null)
-                {
-                    pieceInBlock = moveablePiece;
-                }
-            }
-            
-            // moveable한 칸에 기물이 있을 경우
-            if (pieceInBlock != null)
-            {
-                PieceData data = pieceInBlock.Data;
-                // 해당 기물이 attacker 색의 반대 색깔 킹이면
-                if (data.pieceType == Constants.PieceType.King && data.pieceColor != attackerColor)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    // 체크된 경우에만 실행됨. color가 메이트 했는지 판정
-    private bool IsMate(Constants.PlayerColor color)
-    {
-        Dictionary<(int, int), Piece> opponentAllMoves = GetAllMoveables(OppositePlayerColor(color));
-        Dictionary<(int, int), Piece> myAllMoveables = GetAllMoveables(color);
-
-        if (IsCheck(color, opponentAllMoves))
-            return true;
-        return false;
     }
     
     void InitStates()
@@ -340,7 +220,7 @@ public class GameLogic : IDisposable
     void Check(Dictionary<(int, int), Piece> checkersAllMoveables)
     {
         Debug.Log("<color=red>Check</color>");
-        if (IsMate(_currentState.PlayerType))
+        if (_ruleChecker.IsMate(_currentState.PlayerType))
         {
             OnCheckmate?.Invoke();
         }
@@ -352,14 +232,7 @@ public class GameLogic : IDisposable
         //EndGame() 하기
     }
 
-    public Constants.PlayerColor OppositePlayerColor(Constants.PlayerColor playerColor)
-    {
-        if (playerColor == Constants.PlayerColor.None)
-        {
-            return  Constants.PlayerColor.None;
-        }
-        return playerColor ==  Constants.PlayerColor.White ? Constants.PlayerColor.Black : Constants.PlayerColor.White;
-    }
+    
 
     public void Dispose()
     {

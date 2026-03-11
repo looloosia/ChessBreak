@@ -5,6 +5,7 @@ public abstract class BaseState
     protected Constants.PlayerColor _playerType;
     public Constants.PlayerColor PlayerType => _playerType;
     protected GameLogic _gameLogic;
+    protected RuleChecker _ruleChecker;
     public abstract void OnEnter(GameLogic gameLogic);                      // 상태 진입 시 호출
     public abstract void HandleMove(GameLogic gameLogic, (int,int) index);        // 플레이어 이동 처리
     public abstract void OnExit(GameLogic gameLogic);                       // 상태 종료 시 호출

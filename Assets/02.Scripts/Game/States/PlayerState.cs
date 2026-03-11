@@ -42,6 +42,7 @@ public class PlayerState : BaseState
     {
         Debug.Log("OnEnter");
         _gameLogic = gameLogic;
+        _ruleChecker = GameManager.Instance.RuleChecker;
         // 상태 진입 시 로직 구현
         gameLogic.BoardController.onBlockClicked = OnBlockClicked;
 
@@ -70,7 +71,7 @@ public class PlayerState : BaseState
         }
         
         // 이동 가능한 곳을 클릭했을 때
-        if (_gameLogic.IsMoveable(_secondClickedIndex, _firstClickedPiece))
+        if (_ruleChecker.IsMoveable(_secondClickedIndex, _firstClickedPiece))
         {
             // firstClicked Block의 piece 제거하기
             gameLogic.BoardController.Blocks[_firstClickedIndex].Clear(false);
@@ -125,7 +126,7 @@ public class PlayerState : BaseState
         else if (piece != null)
         {
             // 기물을 먹을 수 있으면
-            if (_gameLogic.IsCapturable(blockIndex, _firstClickedPiece))
+            if (_ruleChecker.IsCapturable(blockIndex, _firstClickedPiece))
             {
                 _secondClickedPiece = piece;
                 _secondClickedIndex = blockIndex;
@@ -137,7 +138,7 @@ public class PlayerState : BaseState
                 _firstClickedPiece = piece;
                 _firstClickedIndex = blockIndex;
                 willRemove.Add(blockIndex);
-                _isTurnable = false;
+                _isTurnable = true;
                 _gameLogic.BoardController.ClearBoard(true);
             }
         }
@@ -160,7 +161,9 @@ public class PlayerState : BaseState
             return;
         }
 
-        _moveableBlocks = GameManager.Instance.MoveChecker.MoveableBlocks(_firstClickedPiece.Data.pieceType, _playerType, _firstClickedIndex);
+        _moveableBlocks =
+            ClonePieceDic(
+                GameManager.Instance.MoveChecker.MoveableBlocks(_firstClickedPiece, _playerType, _firstClickedIndex));
             
         foreach (var moveable in _moveableBlocks.Keys)
         {
@@ -179,5 +182,21 @@ public class PlayerState : BaseState
         {
             _gameLogic.VisualizeMoveables(piece, blockIndex, _moveableBlocks.Keys.ToList());
         }
+    }
+    
+    public Dictionary<(int, int), Piece> ClonePieceDic(Dictionary<(int, int), Piece> originalPieceDic)
+    {
+        Dictionary<(int, int), Piece> newPieceDic = new Dictionary<(int, int), Piece>();
+        foreach (var pair in originalPieceDic)
+        {
+            if (pair.Value == null)
+            {
+                newPieceDic.Add(pair.Key, null);
+                continue;
+            }
+            newPieceDic.Add(pair.Key, pair.Value.Clone(GameManager.Instance.gameObject));
+        }
+
+        return newPieceDic;
     }
 }
