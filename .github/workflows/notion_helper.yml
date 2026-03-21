@@ -1,0 +1,27 @@
+name: Notion Table Helper
+on:
+  push:
+    branches:
+      - '**' # 모든 브랜치 감시
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # 모든 브랜치 정보를 가져오기 위해 필요
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Generate Script List
+        run: python get_scripts.py
+
+      - name: Upload Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: notion-table-to-copy
+          path: scripts_for_notion.md
