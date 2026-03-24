@@ -82,10 +82,13 @@ public class GameLogic : IDisposable
         _boardController.Blocks[index].Clear(false);
         _boardController.Blocks[index].SetPiece(piece);
 
-        Dictionary<(int, int), Piece> myAllMoveables = _ruleChecker.GetAllMoveables(_currentState.PlayerType);
+        Debug.Log("<color=red>PlacePiece에서 GetAllMoveables 실행</color>");
+        Dictionary<(int, int), Piece> myAllMoveables = _ruleChecker.GetAllMoveables(_currentState.PlayerType, false);
         
         // 해당 칸으로 옮기면 체크일 때 _onCheck Invoke
         Debug.Log("_currentState type : " + _currentState.PlayerType);
+        
+        // TODO: 여기서 futuredic 안 넣는 게 맞는지 확인
         if (_ruleChecker.IsCheck(_currentState.PlayerType))
         {
             OnCheck?.Invoke(myAllMoveables);

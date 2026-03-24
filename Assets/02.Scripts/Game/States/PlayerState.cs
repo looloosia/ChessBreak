@@ -71,7 +71,7 @@ public class PlayerState : BaseState
         }
         
         // 이동 가능한 곳을 클릭했을 때
-        if (_ruleChecker.IsMoveable(_secondClickedIndex, _firstClickedPiece))
+        if (_ruleChecker.IsMoveable(index, _firstClickedPiece, false))
         {
             // firstClicked Block의 piece 제거하기
             gameLogic.BoardController.Blocks[_firstClickedIndex].Clear(false);
@@ -99,7 +99,12 @@ public class PlayerState : BaseState
     {
         // gameLogic.blockController.onBlockClicked = null;
     }
-    
+    /// <summary>
+    /// 아무 블록을 클릭했을 때 실행됨
+    /// </summary>
+    /// <param name="piece"></param>
+    /// <param name="block"></param>
+    /// <param name="blockIndex">클릭한 블록의 인덱스</param>
     void OnBlockClicked(Piece piece, Block block, (int, int) blockIndex)
     {
         string strPiece = piece == null ? "null" : piece.ToString();
@@ -109,6 +114,7 @@ public class PlayerState : BaseState
         // 이게 첫번째 클릭일 때
         if (_firstClickedPiece == null)
         {
+            Debug.Log("이게 첫 번째 클릭임");
             _isTurnable = false;
             
             // 첫번째 클릭을 빈칸을 했을 때 그냥 반환
@@ -123,24 +129,28 @@ public class PlayerState : BaseState
             _firstClickedIndex = blockIndex;
         }
         // 이게 두번째 클릭일 때
-        else if (piece != null)
+        else if (_secondClickedPiece == null && _firstClickedPiece != piece)
         {
+            Debug.Log("<color=red>이게 두번째 클릭임</color>");
             // 기물을 먹을 수 있으면
-            if (_ruleChecker.IsCapturable(blockIndex, _firstClickedPiece))
+            if (piece != null)
             {
-                _secondClickedPiece = piece;
-                _secondClickedIndex = blockIndex;
-                _isTurnable = true;
+                if (_ruleChecker.IsCapturable(blockIndex, _firstClickedPiece))
+                {
+                    _secondClickedPiece = piece;
+                    _secondClickedIndex = blockIndex;
+                    
+                }
+                // 기물을 먹을 수 없으면
+                else
+                {
+                    _firstClickedPiece = piece;
+                    _firstClickedIndex = blockIndex;
+                    willRemove.Add(blockIndex);
+                    _gameLogic.BoardController.ClearBoard(true);
+                }
             }
-            // 기물을 먹을 수 없으면
-            else
-            {
-                _firstClickedPiece = piece;
-                _firstClickedIndex = blockIndex;
-                willRemove.Add(blockIndex);
-                _isTurnable = true;
-                _gameLogic.BoardController.ClearBoard(true);
-            }
+            _isTurnable = true;
         }
         // 첫번째로 기물 클릭하고 두번째로 빈칸 클릭했을 때
         else if (_secondClickedPiece == null)
@@ -149,6 +159,15 @@ public class PlayerState : BaseState
             _secondClickedIndex = blockIndex;
             
             _isTurnable = true;
+        }
+        // 한 기물을 두 번 클릭했을 때
+        else if (_firstClickedPiece == piece)
+        {
+            Debug.Log("한 기물을 두 번 클릭함");
+            _secondClickedPiece = null;
+            _firstClickedPiece = piece;
+
+            _isTurnable = false;
         }
         else
         {
@@ -160,10 +179,13 @@ public class PlayerState : BaseState
             Debug.LogError("firstClickedPiece == null");
             return;
         }
-
+        
+        Debug.Log($"OnBlockClicked에서 {_firstClickedPiece} 피스 확인함");
+        bool isVisualizing = !_isTurnable;
+        Debug.Log($"OnBlockClicked에서 isVisualizing is  {isVisualizing}");
         _moveableBlocks =
             ClonePieceDic(
-                GameManager.Instance.MoveChecker.MoveableBlocks(_firstClickedPiece, _playerType, _firstClickedIndex));
+                GameManager.Instance.MoveChecker.MoveableBlocks(_firstClickedPiece, _playerType, _firstClickedIndex, isVisualizing));
             
         foreach (var moveable in _moveableBlocks.Keys)
         {
@@ -177,9 +199,12 @@ public class PlayerState : BaseState
             }
         }
         if (_isTurnable)
+        {
             HandleMove(_gameLogic, blockIndex);
+        }
         else
         {
+            Debug.Log("visualize 해야 함");
             _gameLogic.VisualizeMoveables(piece, blockIndex, _moveableBlocks.Keys.ToList());
         }
     }

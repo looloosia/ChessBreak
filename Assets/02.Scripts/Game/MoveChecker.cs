@@ -18,8 +18,9 @@ public class MoveChecker
         set => _isValidating = value;
     }
 
-    public Dictionary<(int, int), Piece> MoveableBlocks(Piece piece, Constants.PlayerColor pieceColor, (int, int) index)
+    public Dictionary<(int, int), Piece> MoveableBlocks(Piece piece, Constants.PlayerColor pieceColor, (int, int) index, bool isVisualizing)
     {
+        Debug.Log($"<color=red>MoveableBlocks() 실행됨 {piece} 피스 {index} 인덱스 확인, isVisualizing = {isVisualizing}</color>");
         Dictionary<(int, int), Constants.PieceType> tempDic = new Dictionary<(int, int), Constants.PieceType>();
         tempDic.Clear();
         _gameLogic = GameManager.Instance.GameLogic;
@@ -52,14 +53,14 @@ public class MoveChecker
                 }
                 break;
             case Constants.PieceType.Bishop:
-                List<(int, int)> bDiagonals = CalDiagonals(row, col, pieceType, piece, tempDic);
+                List<(int, int)> bDiagonals = CalDiagonals(row, col, pieceType, piece, tempDic, isVisualizing);
                 break;
             case Constants.PieceType.Queen:
-                List<(int, int)> qDiagonals = CalDiagonals(row, col, pieceType, piece, tempDic);
-                List<(int, int)> qStraigths = CalStraights(row, col, pieceType, piece, tempDic);
+                List<(int, int)> qDiagonals = CalDiagonals(row, col, pieceType, piece, tempDic, isVisualizing);
+                List<(int, int)> qStraigths = CalStraights(row, col, pieceType, piece, tempDic, isVisualizing);
                 break;
             case Constants.PieceType.Rook:
-                List<(int, int)> rookStraights = CalStraights(row, col, pieceType, piece, tempDic);
+                List<(int, int)> rookStraights = CalStraights(row, col, pieceType, piece, tempDic, isVisualizing);
                 break;
             case Constants.PieceType.Pawn:
                 // 전진
@@ -68,12 +69,14 @@ public class MoveChecker
                 
                 if (newPawnCol < Constants.BOARD_SIZE && newPawnCol >= 0)
                 {
-                    AddIfPossible(piece, (row, newPawnCol), tempDic);
+                    // Debug.Log("<color=red>Pawn AddIfPossible1</color>");
+                    AddIfPossible(piece, (row, newPawnCol), tempDic, isVisualizing);
                 }
                 if (col == firstRank)
                 {
                     newPawnCol = pieceColor == Constants.PlayerColor.White ? col + 2 : col - 2;
-                    AddIfPossible(piece, (row, newPawnCol), tempDic);
+                    // Debug.Log("<color=red>Pawn AddIfPossible2</color>");
+                    AddIfPossible(piece, (row, newPawnCol), tempDic, isVisualizing);
                 }
                 
                 // 대각선 기물먹기
@@ -99,7 +102,8 @@ public class MoveChecker
                     {
                         if (capturablePiece.Data.pieceColor != pieceColor)
                         {
-                            AddIfPossible(piece, capturable, tempDic);
+                            // Debug.Log("<color=red>Pawn AddIfPossible3</color>");
+                            AddIfPossible(piece, capturable, tempDic, isVisualizing);
                         }
                     }
                 }
@@ -115,7 +119,8 @@ public class MoveChecker
                             continue;
                         }
                         if (i == 0 && j == 0) continue;
-                        AddIfPossible(piece, (row + i, col + j), tempDic);
+                        // Debug.Log("<color=red>King AddIfPossible</color>");
+                        AddIfPossible(piece, (row + i, col + j), tempDic, isVisualizing);
                     }
                 }
                 break;
@@ -124,10 +129,10 @@ public class MoveChecker
         return moveableBlocks;
     }
 
-    List<(int, int)> CalDiagonals(int row, int col, Constants.PieceType pieceType, Piece piece, Dictionary<(int, int), Constants.PieceType> tempDic)
+    List<(int, int)> CalDiagonals(int row, int col, Constants.PieceType pieceType, Piece piece, Dictionary<(int, int), Constants.PieceType> tempDic, bool isVisualizing)
     {
         List<(int, int)> diagonals = new List<(int, int)>();
-        (int, int) finalGoalBlock;
+        (int, int)  finalGoalBlock;
         int checkCol = col;
         int upper = 1;
         int under = -1;
@@ -137,7 +142,8 @@ public class MoveChecker
             checkCol += upper;
             if (checkCol < Constants.BOARD_SIZE)
             {
-                AddIfPossible(piece, (i, checkCol), tempDic);
+                // Debug.Log("<color=red>Diagonal AddIfPossible</color>");
+                AddIfPossible(piece, (i, checkCol), tempDic, isVisualizing);
                 continue;
             }
             break;
@@ -150,7 +156,7 @@ public class MoveChecker
             
             if (checkCol >= 0)
             {
-                AddIfPossible(piece,  (i, checkCol), tempDic);
+                AddIfPossible(piece,  (i, checkCol), tempDic, isVisualizing);
                 continue;
             }
 
@@ -164,7 +170,7 @@ public class MoveChecker
             checkCol += upper;
             if (checkCol < Constants.BOARD_SIZE)
             {
-                AddIfPossible(piece, (i, checkCol), tempDic);
+                AddIfPossible(piece, (i, checkCol), tempDic, isVisualizing);
                 continue;
             }
 
@@ -177,7 +183,7 @@ public class MoveChecker
             checkCol += under;
             if (checkCol >= 0)
             {
-                AddIfPossible(piece, (i, checkCol), tempDic);
+                AddIfPossible(piece, (i, checkCol), tempDic, isVisualizing);
                 continue;
             }
 
@@ -186,27 +192,27 @@ public class MoveChecker
         return diagonals;
     }
 
-    List<(int, int)> CalStraights(int row, int col, Constants.PieceType pieceType, Piece piece, Dictionary<(int, int), Constants.PieceType> tempDic)
+    List<(int, int)> CalStraights(int row, int col, Constants.PieceType pieceType, Piece piece, Dictionary<(int, int), Constants.PieceType> tempDic, bool isVisualizing)
     {
         List<(int, int)> straights = new List<(int, int)>();
         for (int i = row - 1; i >= 0; i--)
         {
-            AddIfPossible(piece, (i, col), tempDic);
+            AddIfPossible(piece, (i, col), tempDic, isVisualizing);
         }
 
         for (int i = row + 1; i < Constants.BOARD_SIZE; i++)
         {
-            AddIfPossible(piece, (i, col), tempDic);
+            AddIfPossible(piece, (i, col), tempDic, isVisualizing);
         }
 
         for (int j = col - 1; j >= 0; j--)
         {
-            AddIfPossible(piece, (row, j), tempDic);
+            AddIfPossible(piece, (row, j), tempDic, isVisualizing);
         }
 
         for (int j = col + 1; j < Constants.BOARD_SIZE; j++)
         {
-            AddIfPossible(piece, (row, j), tempDic);
+            AddIfPossible(piece, (row, j), tempDic, isVisualizing);
         }
         return straights;
     }
@@ -228,6 +234,7 @@ public class MoveChecker
             if (block == null)
                 Debug.LogError($"MoveChecker: block is null(can't find block with {pair.Value} pieceType and {_pieceColor} color on board)");
             finalDic[pair.Key] = block.PieceInBlock;
+            Debug.Log($"<color=blue>FinalDic에 추가 {pair.Key} : {pair.Value}</color>");
         }
 
         return finalDic;
@@ -252,16 +259,31 @@ public class MoveChecker
         return newBlockDic;
     }
 
-    private void AddIfPossible(Piece piece, (int, int) index, Dictionary<(int, int), Constants.PieceType> tempDic)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="piece"></param>
+    /// <param name="index"></param>
+    /// <param name="tempDic"></param>
+    /// <param name="isVisualizing"> 갈 수 있는 곳인지 체크하는 거 말고 그냥 상상만 하는 거인지 여부</param>
+    private void AddIfPossible(Piece piece, (int, int) index, Dictionary<(int, int), Constants.PieceType> tempDic, bool isVisualizing)
     {
         if (!_isValidating)
         {
             try
             {
                 _isValidating = true;
-                if (!GameManager.Instance.RuleChecker.IsCheck(piece.Data.pieceColor,
+                Debug.Log("AddIfPossible: " + piece + ", " + index);
+                if (isVisualizing)
+                {
+                    Debug.Log("isVizualizing으로 check 확인 안 하고 AddIfPossible");
+                    tempDic[index] = piece.Data.pieceType;
+                }
+                    
+                else if (!GameManager.Instance.RuleChecker.IsCheck(piece.Data.pieceColor,
                         GenerateFutureDic(index, piece)))
                 {
+                    Debug.Log("!isVizualing으로 check 확인 후 AddIfPossible");
                     tempDic[index] = piece.Data.pieceType;
                     if (_blocks[index].PieceInBlock != null)
                     {
